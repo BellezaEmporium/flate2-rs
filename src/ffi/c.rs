@@ -141,13 +141,11 @@ pub trait Direction {
 }
 
 #[derive(Debug)]
-/// A wrapper around the ffi stream object that tracks the total input and output
-/// and calls the appropriate cleanup function on drop.
+/// Marker type indicating that the stream is configured for compression (deflate).
 pub enum DirCompress {}
-#[derive(Debug)]
 
-/// A wrapper around the ffi stream object that tracks the total input and output
-/// and calls the appropriate cleanup function on drop.
+#[derive(Debug)]
+/// Marker type indicating that the stream is configured for decompression (inflate).
 pub enum DirDecompress {}
 
 #[derive(Debug)]
