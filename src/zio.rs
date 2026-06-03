@@ -150,7 +150,7 @@ where
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidInput,
                     "corrupt deflate stream",
-                ))
+                ));
             }
         }
     }

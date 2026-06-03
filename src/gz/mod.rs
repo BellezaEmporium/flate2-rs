@@ -462,9 +462,9 @@ impl GzBuilder {
 mod tests {
     use std::io::prelude::*;
 
-    use super::{read, write, GzBuilder, GzHeaderParser};
+    use super::{GzBuilder, GzHeaderParser, read, write};
     use crate::{Compression, GzHeader};
-    use rand::{random_range};
+    use rand::random_range;
 
     #[test]
     fn roundtrip() {

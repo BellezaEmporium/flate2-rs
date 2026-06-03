@@ -2,7 +2,7 @@ use std::cmp;
 use std::io;
 use std::io::prelude::*;
 
-use super::{corrupt, GzBuilder, GzHeader, GzHeaderParser};
+use super::{GzBuilder, GzHeader, GzHeaderParser, corrupt};
 use crate::crc::{Crc, CrcWriter};
 use crate::zio;
 use crate::{Compress, Compression, Decompress, Status};

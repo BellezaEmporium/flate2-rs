@@ -2,8 +2,8 @@ use std::io;
 use std::io::prelude::*;
 
 use super::bufread;
-use crate::bufreader::BufReader;
 use crate::Decompress;
+use crate::bufreader::BufReader;
 
 /// A ZLIB encoder, or compressor.
 ///

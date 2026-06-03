@@ -3,8 +3,8 @@ use std::fmt;
 use std::io;
 use std::ops::DerefMut;
 
-use crate::ffi::{self, Backend, Deflate, DeflateBackend, ErrorMessage, Inflate, InflateBackend};
 use crate::Compression;
+use crate::ffi::{self, Backend, Deflate, DeflateBackend, ErrorMessage, Inflate, InflateBackend};
 
 /// Raw in-memory compression stream for blocks of data.
 ///
@@ -618,9 +618,10 @@ mod tests {
 
         let mut d = Decompress::new(false);
         // decompressed whole deflate stream
-        assert!(d
-            .decompress_vec(&data[10..], &mut decoded, FlushDecompress::Finish)
-            .is_ok());
+        assert!(
+            d.decompress_vec(&data[10..], &mut decoded, FlushDecompress::Finish)
+                .is_ok()
+        );
 
         // decompress data that has nothing to do with the deflate stream (this
         // used to panic)
@@ -685,8 +686,10 @@ mod tests {
         let required_adler = decompress_error.needs_dictionary()
             .expect("the first call to decompress should indicate a dictionary is required along with the required Adler-32 checksum");
 
-        assert_eq!(required_adler, dictionary_adler,
-            "the Adler-32 checksum should match the value when the dictionary was set on the compressor");
+        assert_eq!(
+            required_adler, dictionary_adler,
+            "the Adler-32 checksum should match the value when the dictionary was set on the compressor"
+        );
 
         let actual_adler = decoder.set_dictionary(&dictionary).unwrap();
 

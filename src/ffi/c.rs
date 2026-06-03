@@ -24,8 +24,8 @@ impl ErrorMessage {
 
 /// A wrapper around the zlib stream object that provides default initialization
 pub struct StreamWrapper {
-    /// The inner stream object. 
-    /// We use a `Box` here to ensure that the stream is heap allocated, 
+    /// The inner stream object.
+    /// We use a `Box` here to ensure that the stream is heap allocated,
     /// which is required by zlib since it might store pointers to itself in the `state` field.
     pub inner: Box<mz_stream>,
 }
@@ -195,7 +195,7 @@ impl Direction for DirDecompress {
 }
 
 #[derive(Debug)]
-/// Inflate backend that uses the C zlib library. 
+/// Inflate backend that uses the C zlib library.
 /// This is used by the frontend to implement the various decoder types.
 pub struct Inflate {
     /// The inner stream object that holds the zlib stream and total input/output counters.
@@ -420,7 +420,7 @@ mod c_backend {
     /// The type used for the `items` and `item_size` parameters of the `zalloc` function.
     pub type AllocSize = libz::uInt;
 
-    /// The default window bits for zlib, which is 15. 
+    /// The default window bits for zlib, which is 15.
     /// This is used when initializing the stream with `mz_deflateInit2` and `mz_inflateInit2`.
     pub const MZ_DEFAULT_WINDOW_BITS: c_int = 15;
 
@@ -439,24 +439,28 @@ mod c_backend {
         strategy: c_int,
     ) -> c_int {
         // The deflateInit2 function is used to initialize the zlib stream for compression with the specified parameters.
-        unsafe { libz::deflateInit2_(
-        stream,
-        level,
-        method,
-        window_bits,
-        mem_level,
-        strategy,
-        ZLIB_VERSION.as_ptr() as *const c_char,
-        mem::size_of::<mz_stream>() as c_int,
-        ) }
+        unsafe {
+            libz::deflateInit2_(
+                stream,
+                level,
+                method,
+                window_bits,
+                mem_level,
+                strategy,
+                ZLIB_VERSION.as_ptr() as *const c_char,
+                mem::size_of::<mz_stream>() as c_int,
+            )
+        }
     }
     /// For backwards compatibility, we provide symbols as `mz_` to mimic the miniz API
     pub unsafe extern "C" fn mz_inflateInit2(stream: *mut mz_stream, window_bits: c_int) -> c_int {
-        unsafe { libz::inflateInit2_(
-            stream,
-            window_bits,
-            ZLIB_VERSION.as_ptr() as *const c_char,
-            mem::size_of::<mz_stream>() as c_int,
-        ) }
+        unsafe {
+            libz::inflateInit2_(
+                stream,
+                window_bits,
+                ZLIB_VERSION.as_ptr() as *const c_char,
+                mem::size_of::<mz_stream>() as c_int,
+            )
+        }
     }
 }

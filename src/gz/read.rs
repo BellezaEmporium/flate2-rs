@@ -3,8 +3,8 @@ use std::io::prelude::*;
 
 use super::bufread;
 use super::{GzBuilder, GzHeader};
-use crate::bufreader::BufReader;
 use crate::Compression;
+use crate::bufreader::BufReader;
 
 /// A gzip streaming encoder
 ///

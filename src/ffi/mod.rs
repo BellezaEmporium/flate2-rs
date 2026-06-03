@@ -1,7 +1,7 @@
 //! This module contains backend-specific code.
 
-use crate::mem::{CompressError, DecompressError, FlushCompress, FlushDecompress, Status};
 use crate::Compression;
+use crate::mem::{CompressError, DecompressError, FlushCompress, FlushDecompress, Status};
 
 /// Traits specifying the interface of the backends.
 ///
@@ -17,7 +17,7 @@ pub trait Backend: Sync + Send {
 ///
 /// Traits specifying the interface of the inflate backend. These are
 /// used by the frontend to implement the various decoder types.
-/// 
+///
 pub trait InflateBackend: Backend {
     /// Create the backend
     fn make(zlib_header: bool, window_bits: u8) -> Self;
@@ -30,12 +30,12 @@ pub trait InflateBackend: Backend {
     ) -> Result<Status, DecompressError>;
     /// Reset the backend to its initial state, optionally with a new zlib header and window bits.
     fn reset(&mut self, zlib_header: bool);
-}   
+}
 
 ///
 /// Traits specifying the interface of the deflate backends. These are
 /// used by the frontend to implement the various encoder types.
-/// 
+///
 pub trait DeflateBackend: Backend {
     /// Create the backend
     fn make(level: Compression, zlib_header: bool, window_bits: u8) -> Self;

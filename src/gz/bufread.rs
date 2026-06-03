@@ -3,10 +3,10 @@ use std::io;
 use std::io::prelude::*;
 use std::mem;
 
-use super::{corrupt, read_into, GzBuilder, GzHeader, GzHeaderParser};
+use super::{GzBuilder, GzHeader, GzHeaderParser, corrupt, read_into};
+use crate::Compression;
 use crate::crc::CrcReader;
 use crate::deflate;
-use crate::Compression;
 
 fn copy(into: &mut [u8], from: &[u8], pos: &mut usize) -> usize {
     let min = cmp::min(into.len(), from.len() - *pos);
@@ -437,9 +437,9 @@ impl<R: BufRead> Read for MultiGzDecoder<R> {
 
 #[cfg(test)]
 mod test {
+    use crate::Compression;
     use crate::bufread::GzDecoder;
     use crate::gz::write;
-    use crate::Compression;
     use std::io::{Read, Write};
 
     // GzDecoder consumes one gzip member and then returns 0 for subsequent reads, allowing any
