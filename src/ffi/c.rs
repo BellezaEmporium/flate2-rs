@@ -12,15 +12,21 @@ use super::*;
 use crate::mem::{self, FlushDecompress, Status};
 
 #[derive(Default)]
+/// A simple wrapper around the error message pointer provided by zlib.
 pub struct ErrorMessage(Option<&'static str>);
 
 impl ErrorMessage {
+    /// Returns the error message if it exists and is valid UTF-8.
     pub fn get(&self) -> Option<&str> {
         self.0
     }
 }
 
+/// A wrapper around the zlib stream object that provides default initialization
 pub struct StreamWrapper {
+    /// The inner stream object. 
+    /// We use a `Box` here to ensure that the stream is heap allocated, 
+    /// which is required by zlib since it might store pointers to itself in the `state` field.
     pub inner: Box<mz_stream>,
 }
 
@@ -130,23 +136,36 @@ unsafe impl<D: Direction> Sync for Stream<D> {}
 /// Trait used to call the right destroy/end function on the inner
 /// stream object on drop.
 pub trait Direction {
+    /// Destroys the stream object by calling the appropriate ffi function.
     unsafe fn destroy(stream: *mut mz_stream) -> c_int;
 }
 
 #[derive(Debug)]
+/// A wrapper around the ffi stream object that tracks the total input and output
+/// and calls the appropriate cleanup function on drop.
 pub enum DirCompress {}
 #[derive(Debug)]
+
+/// A wrapper around the ffi stream object that tracks the total input and output
+/// and calls the appropriate cleanup function on drop.
 pub enum DirDecompress {}
 
 #[derive(Debug)]
+/// Structure that holds the stream wrapper and total input/output counters,
+/// and calls the appropriate cleanup function on drop.
 pub struct Stream<D: Direction> {
+    /// The inner stream wrapper that holds the actual zlib stream object.
     pub stream_wrapper: StreamWrapper,
+    /// The total number of bytes read by this stream.
     pub total_in: u64,
+    /// The total number of bytes written by this stream.
     pub total_out: u64,
+    /// A marker to track the direction of this stream (compress or decompress).
     pub _marker: marker::PhantomData<D>,
 }
 
 impl<D: Direction> Stream<D> {
+    /// Returns the error message if it exists and is valid UTF-8.
     pub fn msg(&self) -> ErrorMessage {
         let msg = self.stream_wrapper.msg;
         ErrorMessage(if msg.is_null() {
@@ -168,17 +187,20 @@ impl<D: Direction> Drop for Stream<D> {
 
 impl Direction for DirCompress {
     unsafe fn destroy(stream: *mut mz_stream) -> c_int {
-        mz_deflateEnd(stream)
+        unsafe { mz_deflateEnd(stream) }
     }
 }
 impl Direction for DirDecompress {
     unsafe fn destroy(stream: *mut mz_stream) -> c_int {
-        mz_inflateEnd(stream)
+        unsafe { mz_inflateEnd(stream) }
     }
 }
 
 #[derive(Debug)]
+/// Inflate backend that uses the C zlib library. 
+/// This is used by the frontend to implement the various decoder types.
 pub struct Inflate {
+    /// The inner stream object that holds the zlib stream and total input/output counters.
     pub inner: Stream<DirDecompress>,
 }
 
@@ -269,7 +291,9 @@ impl Backend for Inflate {
 }
 
 #[derive(Debug)]
+/// Deflate backend that uses the C zlib library.
 pub struct Deflate {
+    /// The inner stream object that holds the zlib stream and total input/output counters.
     pub inner: Stream<DirCompress>,
 }
 
@@ -395,8 +419,11 @@ mod c_backend {
     pub use libz::Z_STREAM_END as MZ_STREAM_END;
     pub use libz::Z_STREAM_ERROR as MZ_STREAM_ERROR;
     pub use libz::Z_SYNC_FLUSH as MZ_SYNC_FLUSH;
+    /// The type used for the `items` and `item_size` parameters of the `zalloc` function.
     pub type AllocSize = libz::uInt;
 
+    /// The default window bits for zlib, which is 15. 
+    /// This is used when initializing the stream with `mz_deflateInit2` and `mz_inflateInit2`.
     pub const MZ_DEFAULT_WINDOW_BITS: c_int = 15;
 
     #[cfg(feature = "zlib-ng")]
@@ -404,6 +431,7 @@ mod c_backend {
     #[cfg(not(feature = "zlib-ng"))]
     const ZLIB_VERSION: &'static str = "1.2.8\0";
 
+    /// For backwards compatibility, we provide symbols as `mz_` to mimic the miniz API
     pub unsafe extern "C" fn mz_deflateInit2(
         stream: *mut mz_stream,
         level: c_int,
@@ -412,23 +440,25 @@ mod c_backend {
         mem_level: c_int,
         strategy: c_int,
     ) -> c_int {
-        libz::deflateInit2_(
-            stream,
-            level,
-            method,
-            window_bits,
-            mem_level,
-            strategy,
-            ZLIB_VERSION.as_ptr() as *const c_char,
-            mem::size_of::<mz_stream>() as c_int,
-        )
+        // The deflateInit2 function is used to initialize the zlib stream for compression with the specified parameters.
+        unsafe { libz::deflateInit2_(
+        stream,
+        level,
+        method,
+        window_bits,
+        mem_level,
+        strategy,
+        ZLIB_VERSION.as_ptr() as *const c_char,
+        mem::size_of::<mz_stream>() as c_int,
+        ) }
     }
+    /// For backwards compatibility, we provide symbols as `mz_` to mimic the miniz API
     pub unsafe extern "C" fn mz_inflateInit2(stream: *mut mz_stream, window_bits: c_int) -> c_int {
-        libz::inflateInit2_(
+        unsafe { libz::inflateInit2_(
             stream,
             window_bits,
             ZLIB_VERSION.as_ptr() as *const c_char,
             mem::size_of::<mz_stream>() as c_int,
-        )
+        ) }
     }
 }

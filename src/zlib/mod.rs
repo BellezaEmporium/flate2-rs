@@ -6,28 +6,27 @@ pub mod write;
 mod tests {
     use std::io;
     use std::io::prelude::*;
-
-    use rand::{thread_rng, Rng};
+    use rand::{random_range};
 
     use crate::zlib::{read, write};
     use crate::Compression;
 
     #[test]
     fn roundtrip() {
-        let mut real = Vec::new();
-        let mut w = write::ZlibEncoder::new(Vec::new(), Compression::default());
-        let v = crate::random_bytes().take(1024).collect::<Vec<_>>();
-        for _ in 0..200 {
-            let to_write = &v[..thread_rng().gen_range(0..v.len())];
-            real.extend(to_write.iter().copied());
-            w.write_all(to_write).unwrap();
-        }
-        let result = w.finish().unwrap();
-        let mut r = read::ZlibDecoder::new(&result[..]);
-        let mut ret = Vec::new();
-        r.read_to_end(&mut ret).unwrap();
-        assert_eq!(ret, real);
+    let mut real = Vec::new();
+    let mut w = write::ZlibEncoder::new(Vec::new(), Compression::default());
+    let v = crate::random_bytes().take(1024).collect::<Vec<_>>();
+    for _ in 0..200 {
+        let to_write = &v[..random_range(0..v.len())]; 
+        real.extend(to_write.iter().copied());
+        w.write_all(to_write).unwrap();
     }
+    let result = w.finish().unwrap();
+    let mut r = read::ZlibDecoder::new(&result[..]);
+    let mut ret = Vec::new();
+    r.read_to_end(&mut ret).unwrap();
+    assert_eq!(ret, real);
+}
 
     #[test]
     fn drop_writes() {
@@ -47,7 +46,7 @@ mod tests {
         let mut w = write::ZlibEncoder::new(Vec::new(), Compression::default());
         let v = crate::random_bytes().take(1024).collect::<Vec<_>>();
         for _ in 0..200 {
-            let to_write = &v[..thread_rng().gen_range(0..v.len())];
+            let to_write = &v[..random_range(0..v.len())];
             real.extend(to_write.iter().copied());
             w.write_all(to_write).unwrap();
         }
